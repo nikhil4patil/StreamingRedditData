@@ -81,7 +81,7 @@ if __name__ == "__main__":
 
 
     # Get new batch of data every x seconds
-    sec_wait = 5
+    sec_wait = 30
 
     try:
         while True:

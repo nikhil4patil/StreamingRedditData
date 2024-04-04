@@ -22,7 +22,7 @@
     In StreamingRedditData dir:
         1) Gets and outputs streaming data to topic1
             `$SPARK_HOME/bin/spark-submit reddit_stream.py localhost:9092 subscribe topic1`
-        2) Reads from topic1, does NER, writes table to topic2
+        2) Reads from topic1, does NER, writes table to topic2. Just let it run, takes a while.
             `$SPARK_HOME/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 ner_counter.py localhost:9092 subscribe topic1 topic2`
     In Kafka dir:
         3) Output messages in topic1
