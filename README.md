@@ -31,6 +31,8 @@
             `bin/kafka-console-consumer.sh --topic topic2  --bootstrap-server localhost:9092`
 
 ## Notes
+- Spark download - https://github.com/nicholsonjohnc/spark-wsl-install
+- Kafka download - https://kafka.apache.org/quickstart
 - If you want to write to console and output logs to a file.\
     `$SPARK_HOME/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 ner_counter.py localhost:9092 subscribe topic1 topic2 2>&1 | tee logs.txt`
 
