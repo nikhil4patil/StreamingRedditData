@@ -41,6 +41,8 @@ from __future__ import print_function
 import sys
 import os
 import time
+import datetime
+
 import praw
 from kafka import KafkaProducer
 from dotenv import load_dotenv
@@ -52,13 +54,13 @@ from pyspark.sql.functions import split
 if __name__ == "__main__":
     if len(sys.argv) != 4:
         print("""
-        Usage: reddit_stream.py <bootstrap-servers> <subscribe-type> <topics>
+        Usage: reddit_stream.py <bootstrap-servers> <subscribe-type> <dst_topic>
         """, file=sys.stderr)
         sys.exit(-1)
 
     bootstrapServers = sys.argv[1]
     subscribeType = sys.argv[2]
-    topics = sys.argv[3]
+    dst_topic = sys.argv[3]
 
     config = load_dotenv()
 
@@ -71,27 +73,33 @@ if __name__ == "__main__":
 
     spark.sparkContext.setLogLevel("ERROR")
 
-    reddit = praw.Reddit(
-        client_id=os.environ["client_id"],
-        client_secret=os.environ["client_secret"],
-        user_agent=os.environ["user_agent"],
-    )
+    # reddit = praw.Reddit(
+    #     client_id=os.environ["client_id"],
+    #     client_secret=os.environ["client_secret"],
+    #     user_agent=os.environ["user_agent"],
+    # )
 
 
     # Get new batch of data every x seconds
     sec_wait = 5
 
-    while True:
-        # Get the kafka producer 
-        producer = KafkaProducer(bootstrap_servers=bootstrapServers)
+    try:
+        while True:
+            # Get the kafka producer 
+            producer = KafkaProducer(bootstrap_servers=bootstrapServers)
 
-        # Load and send the data to kafka topic. Loads 100 comments at a time.
-        for index, comment in enumerate(reddit.subreddit("all").comments()):
-            # Send the comment text to Kafka topic
-            producer.send(topics, comment.body.encode("utf-8"))
+            # Load and send the data to kafka topic. Loads 100 comments at a time.
+            # for index, comment in enumerate(reddit.subreddit("all").comments()):
+            for index, comment in enumerate(["Obama said this from the White House.", "Obama did NOT say this from the White House."]):
+                # Send the comment text to Kafka topic
+                # producer.send(dst_topic, comment.body.encode("utf-8"))
+                producer.send(dst_topic, f"{datetime.datetime.now().strftime('%x_%X')}__{comment}".encode("utf-8"))
 
-        # Flush all the messages to the Kafka topic
-        kafka_producer.flush()
- 
-        # Sleep for a bit to wait for new batch of data
-        time.sleep(sec_wait)
+            # Flush all the messages to the Kafka topic
+            kafka_producer.flush()
+    
+            # Sleep for a bit to wait for new batch of data
+            time.sleep(sec_wait)
+    except Exception:
+        producer.close()
+        exit(0)
