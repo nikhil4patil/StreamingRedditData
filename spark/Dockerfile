@@ -8,6 +8,7 @@ RUN pip install -r requirements.txt
 COPY . /app/
 
 RUN chmod +x script.sh
+RUN sed -i -e 's/\r$//' script.sh
 
 # Run the script with spark-submit
 CMD ["/app/script.sh"]
