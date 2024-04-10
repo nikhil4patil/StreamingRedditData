@@ -4,7 +4,7 @@ import sys
 
 from pyspark.sql import SparkSession
 from pyspark.sql.types import *
-from pyspark.sql.functions import explode, split, udf
+from pyspark.sql.functions import explode, split, udf, current_timestamp, window
 from kafka import KafkaProducer
 
 print("Loading spacy")
@@ -58,7 +58,8 @@ if __name__ == "__main__":
 	# Define the schema for the named entity count
 	schema = StructType([
 		StructField("entity", StringType(), True),
-		StructField("count", IntegerType(), True)
+		StructField("count", IntegerType(), True),
+		StructField("curr_timestamp", TimestampType(), True),
 	])
 
 	print("Extracting entities")
@@ -82,18 +83,24 @@ if __name__ == "__main__":
 	)
 
 	# Extract named entities from the text
+	df = df.withColumn("curr_timestamp", current_timestamp())
 	df = df.withColumn("entities", extract_entities_udf("word"))
 
 	# Explode the array of named entities to individual rows
-	df = df.selectExpr("explode(entities) as entity")
+	df = df.select(explode("entities").alias("entity"), "curr_timestamp")
 
 	# Group by entity and count occurrences
-	agg_df = df.groupBy("entity").count()
+	agg_df = df \
+		.withWatermark("curr_timestamp", "31 seconds") \
+		.groupBy(
+			window("curr_timestamp", "31 seconds", "31 seconds"),
+			"entity"
+		).count()
 
 	print(f"About to send data to kafka {dst_topic}")
 
 	query = agg_df.writeStream \
-			.outputMode("complete") \
+			.outputMode("append") \
 			.foreachBatch(send_to_kafka) \
 			.start()
 

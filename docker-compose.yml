@@ -48,7 +48,7 @@ services:
       - init-kafka
     networks:
       - elastic
-    restart: on-failure:4
+    restart: unless-stopped
   spark:
     build: ./spark
     container_name: spark
