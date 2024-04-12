@@ -1,7 +1,7 @@
 version: "3"
 services:
   zookeeper:
-    image: bitnami/zookeeper:3.9
+    image: bitnami/zookeeper:3.9.2
     container_name: zookeeper
     ports:
       - "2181:2181"
@@ -10,7 +10,7 @@ services:
     environment:
       - ALLOW_ANONYMOUS_LOGIN=yes
   kafka:
-    image: bitnami/kafka:3.4
+    image: bitnami/kafka:3.6.2
     container_name: kafka
     ports:
       - "9092:9092"
@@ -21,7 +21,7 @@ services:
     depends_on:
       - zookeeper
   init-kafka:
-    image: bitnami/kafka:latest
+    image: bitnami/kafka:3.6.2
     depends_on:
       - kafka
     entrypoint: [ '/bin/sh', '-c' ]
@@ -62,7 +62,7 @@ services:
       - init-kafka
       - python
   elasticsearch:
-    image: elasticsearch:7.16.1
+    image: elasticsearch:7.17.20
     container_name: elasticsearch
     environment:
       discovery.type: single-node
@@ -70,15 +70,10 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
-    healthcheck:
-      test: ["CMD-SHELL", "curl --silent --fail localhost:9200/_cluster/health || exit 1"]
-      interval: 10s
-      timeout: 10s
-      retries: 3
     networks:
       - elastic
   logstash:
-    image: logstash:7.16.1
+    image: logstash:7.17.20
     container_name: logstash
     environment:
       discovery.seed_hosts: logstash
@@ -96,7 +91,7 @@ services:
       - elastic
     command: logstash -f /usr/share/logstash/pipeline/logstash.conf
   kibana:
-    image: kibana:7.16.1
+    image: kibana:7.17.20
     container_name: kibana
     ports:
       - "5601:5601"

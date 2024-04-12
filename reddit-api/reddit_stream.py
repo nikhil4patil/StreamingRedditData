@@ -8,13 +8,10 @@ from dotenv import load_dotenv
 if __name__ == "__main__":
 	if len(sys.argv) != 2:
 		print("""
-		Usage: reddit_stream.py <bootstrap-servers> <topics>
+		Usage: reddit_stream.py <topics>
 		""", file=sys.stderr)
 		sys.exit(-1)
 
-	print("Sys args: ", sys.argv)
-	# bootstrapServers = sys.argv[1]
-	# subscribeType = sys.argv[2]
 	topics = sys.argv[1]
 
 	config = load_dotenv()
@@ -30,19 +27,22 @@ if __name__ == "__main__":
 	print("Reddit API connected")
 
 	# Get new batch of data every x seconds
-	sec_wait = 30
+	sec_wait = os.environ["polling_interval_seconds"]
+
+	# List of subreddits to stream data from
+	subreddits = os.environ["subreddits"]
 
 	while True:
 		# Get the kafka producer 
 		producer = KafkaProducer(bootstrap_servers="kafka:9092")
 
-		# Load and send the data to kafka topic. Loads 100 comments at a time.
-		for index, comment in enumerate(reddit.subreddit("all").comments()):
-			# Send the comment text to Kafka topic
-			producer.send(topics, comment.body.encode("utf-8"))
+		# Load and send the data to kafka topic. Loads new posts in r/all subbreddit.
+		for index, submission in enumerate(reddit.subreddit(subreddits).new()):
+			# Send the post title text to Kafka topic
+			producer.send(topics, submission.title.encode('utf-8'))
 
 		# Flush all the messages to the Kafka topic
 		kafka_producer.flush()
  
 		# Sleep for a bit to wait for new batch of data
-		time.sleep(sec_wait)
+		time.sleep(int(sec_wait))
