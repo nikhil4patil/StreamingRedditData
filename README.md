@@ -8,8 +8,8 @@ Heads up: you will need to logout or restart after downloading Docker Desktop if
 	- Should see docker-compose file, spark, reddit-api, and logstash dirs
 4) Run `docker compose up --build`
 	- It takes a while to download and execute the first time, ~15 mins
-	- Here's a video showing the whole process - TODO
-	- Should start seeing logs like this ![[Pasted image 20240408230536.png]]
+	- Should start seeing logs like this
+	<img width="846" alt="Screenshot 2024-04-12 at 1 42 35 AM" src="https://github.com/nikhil4patil/StreamingRedditData/assets/23207859/9d7271d9-334c-412b-bd36-7aaff95301ca">
 5) Go to [localhost:5601](localhost:5601) to access the Kibana UI
 	1) Click on "**+ Add Integrations**"
 	2) On top, Search Elastic for "**Index Patterns**"
@@ -32,5 +32,7 @@ Heads up: you will need to logout or restart after downloading Docker Desktop if
 	7) "**Vertical axis**"
 		1) Function: **Maximum**
 		2) Field: **count**
+
+![Steps](https://github.com/nikhil4patil/StreamingRedditData/assets/23207859/d485e14e-c616-45e4-9eb9-0aaabce36633)
 
 # Part 2: Run on Colab
