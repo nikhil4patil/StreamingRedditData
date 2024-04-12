@@ -1,40 +1,36 @@
-# StreamingRedditData
+# Part 1: How to run on Docker
 
-## Install required packages
-`pip install praw kafka-python python-dotenv pyspark spacy`
+Heads up: you will need to logout or restart after downloading Docker Desktop if you do not have it installed already.
 
-## Starting Zookeeper and Kafka (from Kafka dir)
-### Remove old logs that cause issues for some reason
-`rm -rf /tmp/kafka-logs /tmp/zookeeper`
-### Start Zookeeper
-`bin/zookeeper-server-start.sh config/zookeeper.properties`
-### Start Kafa
-`bin/kafka-server-start.sh config/server.properties`
-### Check if topic1 and topic2 are created
-`bin/kafka-topics.sh --bootstrap-server localhost:9092 --list`
-####    If topics are not created
-    topic1 - `bin/kafka-topics.sh --create --topic topic1 --bootstrap-server localhost:9092`\
-    topic2 - `bin/kafka-topics.sh --create --topic topic2 --bootstrap-server localhost:9092`
+1) Download [Docker Desktop](https://www.docker.com/products/docker-desktop/) 
+2) Download and extract **StreamingRedditData.zip** file submitted on eLearning
+3) Go to the **StreamingRedditData** directory in command prompt or terminal
+	- Should see docker-compose file, spark, reddit-api, and logstash dirs
+4) Run `docker compose up --build`
+	- It takes a while to download and execute the first time, ~15 mins
+	- Here's a video showing the whole process - TODO
+	- Should start seeing logs like this ![[Pasted image 20240408230536.png]]
+5) Go to [localhost:5601](localhost:5601) to access the Kibana UI
+	1) Click on "**+ Add Integrations**"
+	2) On top, Search Elastic for "**Index Patterns**"
+	3) Select "**Kibana / Index Patterns**" from the search results
+	4) "**+ Create index pattern**"
+		1) Name: "**topic-test\***"
+		2) Timestamp Field: **@timestamp**
+		3) Click on "**Create index pattern**"
+6) Create a dashboard visualization with the frequent entities
+	1) Click on the burger/menu option in top left (near the green D)
+	2) Under "**Analytics**", choose "**Dashboard**"
+	3) "**Create visualization**"
+	4) Ensure **topic-test\*** is selected on the menu on the right side
+	5) Choose "**Bar Horizontal**" instead of "Bar Vertical Stacked"
+	6) "**Horizontal axis**"
+		1) Field: **entity.keyword**
+		2) Number of values: **10**
+		3) **Advanced** -> Toggle off "**Group other values as Other**"
+		4) **Close** (at bottom right)
+	7) "**Vertical axis**"
+		1) Function: **Maximum**
+		2) Field: **count**
 
----
-
-## Create 1 MS Terminals tab with 4 views
-    In StreamingRedditData dir:
-        1) Gets and outputs streaming data to topic1
-            `$SPARK_HOME/bin/spark-submit reddit_stream.py localhost:9092 subscribe topic1`
-        2) Reads from topic1, does NER, writes table to topic2. Just let it run, takes a while.
-            `$SPARK_HOME/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 ner_counter.py localhost:9092 subscribe topic1 topic2`
-    In Kafka dir:
-        3) Output messages in topic1
-            `bin/kafka-console-consumer.sh --topic topic1  --bootstrap-server localhost:9092`
-        4) Output messages in topic2
-            `bin/kafka-console-consumer.sh --topic topic2  --bootstrap-server localhost:9092`
-
-## Notes
-- Spark download - https://github.com/nicholsonjohnc/spark-wsl-install
-- Kafka download - https://kafka.apache.org/quickstart
-- If you want to write to console and output logs to a file.\
-    `$SPARK_HOME/bin/spark-submit --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.1 ner_counter.py localhost:9092 subscribe topic1 topic2 2>&1 | tee logs.txt`
-
-## TODO
-- Writing to Kafka requires a "value" column of type String. Might need to format the table as a string and then send it to topic2?
+# Part 2: Run on Colab
