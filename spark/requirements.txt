@@ -1,4 +1,4 @@
 kafka-python
 pyspark
 python-dotenv
-spacy
+spacy==3.7.2

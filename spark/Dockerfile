@@ -1,4 +1,4 @@
-FROM spark:3.5.0-python3
+FROM spark:3.5.5-python3
 USER root
 COPY requirements.txt /app/requirements.txt
 WORKDIR /app

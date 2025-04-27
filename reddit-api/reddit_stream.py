@@ -16,7 +16,6 @@ if __name__ == "__main__":
 
 	config = load_dotenv()
 
-	kafka_producer = KafkaProducer(bootstrap_servers="kafka:9092")
 	print("Kafka producer created")
 
 	reddit = praw.Reddit(
@@ -32,9 +31,9 @@ if __name__ == "__main__":
 	# List of subreddits to stream data from
 	subreddits = os.environ["subreddits"]
 
+	# Get the kafka producer 
+	producer = KafkaProducer(bootstrap_servers="kafka:9092")
 	while True:
-		# Get the kafka producer 
-		producer = KafkaProducer(bootstrap_servers="kafka:9092")
 
 		# Load and send the data to kafka topic. Loads new posts in r/all subbreddit.
 		for index, submission in enumerate(reddit.subreddit(subreddits).new()):
@@ -42,7 +41,7 @@ if __name__ == "__main__":
 			producer.send(topics, submission.title.encode('utf-8'))
 
 		# Flush all the messages to the Kafka topic
-		kafka_producer.flush()
+		producer.flush()
  
 		# Sleep for a bit to wait for new batch of data
 		time.sleep(int(sec_wait))
